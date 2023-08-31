@@ -1,6 +1,6 @@
 {{- $architecture := or .architecture "arm64" -}}
 {{- $apilevel := or .apilevel "28" -}}
-{{- $suite := "bookworm" -}}
+{{- $suite := "trixie" -}}
 {{- $version := or .version "nightly" -}}
 {{- $variant := or .variant "phone" -}}
 {{- $use_internal_repository := or .use_internal_repository "no" -}}
@@ -48,4 +48,9 @@ actions:
       - droidian-quirks-regenerate-ssh-keys
       - adaptation-hybris-devtools
 {{end}}
+
+  - action: run
+    description: clean droidian-phosh
+    chroot: true
+    script: scripts/clean-phosh.sh
 
