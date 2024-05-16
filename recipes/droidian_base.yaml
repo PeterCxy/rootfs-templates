@@ -39,6 +39,11 @@ actions:
     destination: /var/lib/droidian-internal-repository
 {{end}}
 
+  - action: overlay
+    source: ../../overlay
+    description: Hack to suport remote repositories
+    destination: /
+
   - action: run
     description: Build configuration
     chroot: true
