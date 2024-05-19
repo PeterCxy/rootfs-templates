@@ -6,10 +6,11 @@ architecture: {{ $architecture }}
 actions:
 
   - action: debootstrap
-    suite: {{ $suite }}
+    suite: rolling
     components:
       - main
-    mirror: http://deb.debian.org/debian
+    keyring-file: ../apt/etc/apt/trusted.gpg.d/droidian-bootstrap.gpg
+    mirror: http://releases.droidian.org/snapshots/current
     variant: minbase
 
   - action: overlay
@@ -31,6 +32,11 @@ actions:
     description: Clean repositories
     chroot: true
     script: ../scripts/clean-bootstrap-repositories.sh
+
+  - action: overlay
+    source: ../../overlay
+    description: Hack to suport remote repositories
+    destination: /
 
   - action: overlay
     source: ../../overlay
