@@ -1,6 +1,7 @@
 {{- $architecture := or .architecture "arm64" -}}
 {{- $suite := "trixie" -}}
 {{- $use_internal_repository := or .use_internal_repository "no" -}}
+{{- $droidian_version := or .droidian_version "current" -}}
 
 architecture: {{ $architecture }}
 actions:
@@ -10,12 +11,17 @@ actions:
     components:
       - main
     keyring-file: ../apt/etc/apt/trusted.gpg.d/droidian-bootstrap.gpg
-    mirror: http://releases.droidian.org/snapshots/current
+    mirror: http://releases.droidian.org/snapshots/{{ $droidian_version }}
     variant: minbase
 
   - action: overlay
     source: ../apt
     description: Adding apt overlay
+    destination: /
+
+  - action: overlay
+    source: ../../pre-overlay
+    description: Add extra overlay before setting-up repositories
     destination: /
 
   - action: apt
@@ -31,7 +37,7 @@ actions:
   - action: run
     description: Clean repositories
     chroot: true
-    script: ../scripts/clean-bootstrap-repositories.sh
+    script: ../scripts/clean-bootstrap-repositories.sh {{ $droidian_version }}
 
 {{ if eq $use_internal_repository "yes" }}
   - action: overlay
@@ -39,11 +45,6 @@ actions:
     description: Add internal repository
     destination: /var/lib/droidian-internal-repository
 {{end}}
-
-  - action: overlay
-    source: ../../overlay
-    description: Hack to suport remote repositories
-    destination: /
 
   - action: run
     description: Build configuration

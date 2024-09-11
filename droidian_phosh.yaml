@@ -1,9 +1,10 @@
 {{- $architecture := or .architecture "arm64" -}}
 {{- $apilevel := or .apilevel "28" -}}
 {{- $suite := "trixie" -}}
-{{- $version := or .version "nightly" -}}
+{{- $version := or .version "next" -}}
 {{- $variant := or .variant "phone" -}}
 {{- $use_internal_repository := or .use_internal_repository "no" -}}
+{{- $droidian_version := or .droidian_version "current" -}}
 
 {{- $username := or .username "droidian" -}}
 {{- $password := or .password "1234" -}}
@@ -20,6 +21,7 @@ actions:
       apilevel: {{ $apilevel }}
       suite: {{ $suite }}
       use_internal_repository: {{ $use_internal_repository }}
+      droidian_version: {{ $droidian_version }}
       username: {{ $username }}
       password: {{ $password }}
       hostname: {{ $hostname }}
@@ -28,7 +30,6 @@ actions:
     chroot: true
     description: install droidian-phosh
     packages:
-      - adaptation-hybris-phosh
       - droidian-phosh-full
 
 {{ if eq $variant "phone" }}
@@ -40,15 +41,21 @@ actions:
       - droidian-phosh-phone
 {{end}}
 
-{{ if eq $version "nightly" }}
+{{ if eq $version "next" }}
   - action: apt
     chroot: true
-    description: install devtools (nightly)
+    description: install devtools (next)
     packages:
       - droidian-devtools
       - droidian-quirks-regenerate-ssh-keys
       - adaptation-hybris-devtools
 {{end}}
+
+  - action: apt
+    chroot: true
+    description: install droidian-extras
+    packages:
+      - droidian-extras
 
   - action: run
     description: clean droidian-phosh

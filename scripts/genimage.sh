@@ -37,11 +37,11 @@ echo "Creating VG"
 vgcreate droidian "${DEVICE}"
 
 # Create LVs, currently
-# 1) droidian-persistent (32M)
+# 1) droidian-persistent (128M)
 # 2) droidian-reserved (32M)
 # 3) droidian-rootfs (rest)
 echo "Creating LVs"
-lvcreate --zero n -L 32M -n droidian-persistent droidian
+lvcreate --zero n -L 128M -n droidian-persistent droidian
 lvcreate --zero n -L 32M -n droidian-reserved droidian
 lvcreate --zero n -l 100%FREE -n droidian-rootfs droidian
 
@@ -65,7 +65,7 @@ ROOTFS_VOLUME=${ROOTFS_VOLUME/\/dev/\/host-dev}
 
 # Create rootfs filesystem
 echo "Creating rootfs filesystem"
-mkfs.ext4 -O ^metadata_csum -O ^64bit ${ROOTFS_VOLUME}
+mkfs.ext4 -O ^metadata_csum -O ^64bit -O ^orphan_file ${ROOTFS_VOLUME}
 
 # mount the image
 echo "Mounting root image"
@@ -105,18 +105,22 @@ recovery=$(find ${ROOTFS_PATH}/boot -iname recovery.img* -type f | head -n 1)
 dtbo=$(find ${ROOTFS_PATH}/boot -iname dtbo.img* -type f | head -n 1)
 vbmeta=$(find ${ROOTFS_PATH}/boot -iname vbmeta.img* -type f | head -n 1)
 
-cp "${bootimage}" ${WORK_DIR}/target/data/boot.img
+[ -e "${bootimage}" ] && cp "${bootimage}" ${WORK_DIR}/target/data/boot.img
 [ -e "${recovery}" ] && cp "${recovery}" ${WORK_DIR}/target/data/recovery.img
 [ -e "${dtbo}" ] && cp "${dtbo}" ${WORK_DIR}/target/data/dtbo.img
 [ -e "${vbmeta}" ] && cp "${vbmeta}" ${WORK_DIR}/target/data/vbmeta.img
 
-kernel_version=$(basename ${bootimage})
-kernel_version=${kernel_version/boot.img-//}
+if [ -e "${bootimage}" ]; then
+	kernel_version=$(basename ${bootimage})
+	kernel_version=${kernel_version/boot.img-//}
 
-cat \
-	${ROOTFS_PATH}/usr/lib/flash-bootimage/flash-bootimage.conf \
-	${ROOTFS_PATH}/usr/lib/flash-bootimage/${kernel_version}.conf \
-	> ${WORK_DIR}/target/data/device-configuration.conf
+	cat \
+		${ROOTFS_PATH}/usr/lib/flash-bootimage/flash-bootimage.conf \
+		${ROOTFS_PATH}/usr/lib/flash-bootimage/${kernel_version}.conf \
+		> ${WORK_DIR}/target/data/device-configuration.conf
+else
+	touch ${WORK_DIR}/target/data/device-configuration.conf
+fi
 
 # generate zip
 echo "Generating zip"

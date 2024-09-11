@@ -1,9 +1,10 @@
 {{- $architecture := or .architecture "arm64" -}}
 {{- $apilevel := or .apilevel "28" -}}
 {{- $suite := "trixie" -}}
-{{- $version := or .version "nightly" -}}
+{{- $version := or .version "next" -}}
 {{- $variant := or .variant "phone" -}}
 {{- $use_internal_repository := or .use_internal_repository "no" -}}
+{{- $droidian_version := or .droidian_version "current" -}}
 
 {{- $username := or .username "droidian" -}}
 {{- $password := or .password "1234" -}}
@@ -20,6 +21,7 @@ actions:
       apilevel: {{ $apilevel }}
       suite: {{ $suite }}
       use_internal_repository: {{ $use_internal_repository }}
+      droidian_version: {{ $droidian_version }}
       username: {{ $username }}
       password: {{ $password }}
       hostname: {{ $hostname }}
@@ -36,8 +38,8 @@ actions:
     chroot: true
     description: install cutie
     packages:
+      - cutie-full
       - adaptation-hybris-cutie
-      - droidian-cutie-full
 
 {{ if eq $variant "phone" }}
   - action: apt
@@ -45,20 +47,21 @@ actions:
     description: install packages for the phone variant
     packages:
       - adaptation-hybris-api{{ $apilevel }}-phone
-      - droidian-cutie-phone
+      - cutie-phone-full
 {{end}}
 
-{{ if eq $version "nightly" }}
+{{ if eq $version "next" }}
   - action: apt
     chroot: true
-    description: install devtools (nightly)
+    description: install devtools (next)
     packages:
       - droidian-devtools
       - droidian-quirks-regenerate-ssh-keys
       - adaptation-hybris-devtools
+      - cutie-devtools
 {{end}}
 
   - action: run
-    description: Set up cutie
+    description: clean cutie
     chroot: true
-    script: scripts/setup-cutie.sh
+    script: scripts/clean-cutie.sh
